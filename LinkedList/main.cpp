@@ -6,24 +6,126 @@
 template <typename Type>
 class LinkedList {
 public:
+	//конст. по умолчанию
+	LinkedList():start_(nullptr),end_(nullptr),size_(0) {}
 
-	LinkedList();
-	LinkedList(int n); //лист с уже созданными n элементами
+	LinkedList(int n) :LinkedList() { //лист с уже созданными n элементами
+		if (n < 0)throw - 1;
+		if (n == 0)return;
+		Node* tmp{};
+		//---- 1 вариант, сложно читаемый
+		/*
+		size_ = n;
+		
+		do {
+			
+			tmp = new Node;
+			if (start_ == nullptr) {
+				start_ = tmp;
+			}
+			 
+			n -= 1;
+		} while (n > 0);
+		*/
+		//----------
+		int addedNodes{ 0 };
+		tmp = new Node{};
+		start_ = tmp;
+		end_ = tmp;
+		addedNodes += 1;
+		while (addedNodes < n) {
+			tmp = new Node{}; // создаем новую точку
+			end_->Next(tmp); // старому концу списка говорим что новый конечный элемент существует  
+			end_ = tmp; // запоминаем в списке какой элемент сейчас последний
+			addedNodes += 1;
+		}
+		size_ = n;
+	}
 
-	LinkedList(const LinkedList& other);
-	LinkedList(LinkedList&& other);//можно не делать, но для оптимизации скорости работы программы полезно.
-	//тут не будет реализации конструкора от списка инициализации, внесем позже.
+	LinkedList(const LinkedList& other):LinkedList() {
+		if (other.size() == 0)return;
+		start_ = new Node(other.start_->Data());
+		end_ = start_;
+		for (Node* current = other.start_->Next();current != nullptr;current = current->Next()){
+			//Node* tmp = new Node(other[i]);
 
-	~LinkedList();
+			Node* tmp = new Node(current->Data());
+			end_->Next(tmp);
+			end_ = tmp;
+		}
+		size_ = other.size_;
+	}
+	LinkedList(LinkedList&& other):LinkedList() { //можно не делать, но для оптимизации скорости работы программы полезно. //тут не будет реализации конструкора от списка инициализации, внесем позже.
+		std::swap(start_, other.start_);
+		std::swap(end_, other.end_);
+		std::swap(size_, other.size_);
+	}
 
+	~LinkedList() {
+		 Node* current = start_; 
+		 while (current != nullptr) {
+			 Node* tmp = current->Next();
+			 delete current;
+			 current = tmp;
+		 }
+	}
+
+	void clear() {
+		Node* current = start_;
+		while (current != nullptr) {
+			Node* tmp = current->Next();
+			delete current;
+			current = tmp;
+		}
+		start_=nullptr;
+		end_=nullptr;
+		size_=0;
+	}
+	
 	// присваивание копированием
-	LinkedList& operator = (const LinkedList& other);
+	LinkedList& operator = (const LinkedList& other) {
+		clear();
+		if (other.size() == 0) return *this;
+		start_ = new Node(other.start_->Data());
+		end_ = start_;
+		for (Node* current = other.start_->Next(); current != nullptr; current = current->Next()) {
+			Node* tmp = new Node(current->Data());
+			end_->Next(tmp);
+			end_ = tmp;
+		}
+		size_ = other.size_;
+		return *this;
+	}
 	// присваивание переносом
-	LinkedList& operator = (LinkedList&& other);
+	LinkedList& operator = (LinkedList&& other) {
+		clear();
+		std::swap(start_, other.start_);
+		std::swap(end_, other.end_);
+		std::swap(size_, other.size_);
 
-	//adad
-	Type& operator[](int i);
-	const Type& operator[](int i)const;
+		return *this;
+	}
+
+	//оператор доступа к хранящимся элементам 
+	Type& operator[](int i) {
+		int count{};
+		Node* tmp = start_;
+		while (count < i) {
+			tmp = tmp->Next();
+			count += 1;
+		}
+		return tmp->Data();
+	}
+
+	const Type& operator[](int i)const {
+		int count{};
+		Node* tmp = start_;
+		while (count < i) {
+			tmp = tmp->Next();
+			count += 1;
+		}
+		return tmp->Data();
+	}
 
 	Type &at (int i);
 	const Type &at (int i)const;
