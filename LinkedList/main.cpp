@@ -21,7 +21,7 @@ public:
 	// присваивание переносом
 	LinkedList& operator = (LinkedList&& other);
 
-
+	//adad
 	Type& operator[](int i);
 	const Type& operator[](int i)const;
 
